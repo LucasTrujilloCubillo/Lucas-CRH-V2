@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Activity, TrendingUp } from 'lucide-react';
-import { CheckpointReview, getRequiredStage, stageToScore } from '../types';
+import { CheckpointReview, getRequiredStage } from '../types';
 import TruncatedTooltip from './TruncatedTooltip';
 
 interface CheckpointProgressChartProps {
@@ -79,9 +79,7 @@ export default function CheckpointProgressChart({
   const selectedCompStage = selectedCompId
     ? getRequiredStage(careerPathId, levelId, selectedCompId)
     : null;
-  const selectedCompTarget = selectedCompStage
-    ? stageToScore(selectedCompStage)
-    : null;
+  const selectedCompTarget = selectedCompId ? requiredScore : null;
 
   // Determine active view values to compute piecewise compressed Y-axis (10% / 80% / 10%)
   const activeValues =
@@ -180,12 +178,12 @@ export default function CheckpointProgressChart({
             <span aria-hidden="true" className="mx-1.5">·</span>
             {chartMode === 'media' ? (
               <>
-                Meta {levelLabel}: <span className="font-mono tabular-nums font-semibold text-slate-700">{requiredScore.toFixed(2)}/5</span>
+                Meta {levelLabel}: <span className="font-mono tabular-nums font-semibold text-slate-700">{requiredScore.toFixed(2)}</span>
               </>
             ) : selectedCompMeta && selectedCompTarget !== null && selectedCompStage ? (
               <>
                 Meta {selectedCompMeta.name} (Etapa {selectedCompStage.toLowerCase()}):{' '}
-                <span className="font-mono tabular-nums font-semibold text-slate-700">{selectedCompTarget.toFixed(2)}/5</span>
+                <span className="font-mono tabular-nums font-semibold text-slate-700">{selectedCompTarget.toFixed(2)}</span>
               </>
             ) : (
               <span>Selecciona una competencia para ver su meta</span>

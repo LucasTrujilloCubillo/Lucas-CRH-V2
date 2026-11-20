@@ -77,6 +77,30 @@ export interface EmployeeCertification {
   expiryDate: string;
 }
 
+export type RecognitionTagId = 'high_potential';
+
+export interface RecognitionDefinition {
+  id: RecognitionTagId;
+  label: string;
+  tooltip: string;
+  description: string;
+}
+
+export const TALENT_RECOGNITIONS: RecognitionDefinition[] = [
+  {
+    id: 'high_potential',
+    label: 'Alto Potencial',
+    tooltip: 'Alto potencial',
+    description:
+      'Indica que es un perfil estratégico con gran proyección de crecimiento y desarrollo dentro de la empresa. Su perfil mostrará un distintivo visible para el resto de responsables y administradores.'
+  }
+];
+
+export const VALID_RECOGNITION_IDS = new Set<string>(TALENT_RECOGNITIONS.map(r => r.id));
+
+export const getRecognitionDefinition = (id: string): RecognitionDefinition | undefined =>
+  TALENT_RECOGNITIONS.find(r => r.id === id);
+
 export interface Employee {
   employeeId: string;
   name: string;
@@ -93,6 +117,8 @@ export interface Employee {
   hireDate: string;
   status: 'Active' | 'OnLeave' | 'Terminated';
   availabilityPercent: number; // 0 to 100
+  recognitions?: string[];
+  salaryEur?: number;
   skills: EmployeeSkill[];
   certifications: EmployeeCertification[];
   projectHistory: { projectId: string; role: string; performance: number }[];
@@ -565,6 +591,19 @@ export const getLevelTargetScore = (levelId: string): number => {
     case 'L6':
     case 'L7': return 5.0;
     default: return 3.0;
+  }
+};
+
+export const getDefaultSalaryForLevel = (levelId: string): number => {
+  switch (levelId) {
+    case 'L1': return 22000;
+    case 'L2': return 29000;
+    case 'L3': return 38000;
+    case 'L4': return 50000;
+    case 'L5': return 64000;
+    case 'L6': return 80000;
+    case 'L7': return 95000;
+    default: return 35000;
   }
 };
 

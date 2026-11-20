@@ -3,7 +3,7 @@ import path from 'path';
 import { createServer as createViteServer } from 'vite';
 import { dbStoreInstance } from './src/data/dbStore';
 import { GoogleGenAI } from '@google/genai';
-import { ProjectRoleRequest, CheckpointReview, AnnualEvaluation, DivisionBudget } from './src/types';
+import { ProjectRoleRequest, CheckpointReview, AnnualEvaluation, DivisionBudget, VALID_RECOGNITION_IDS, getDefaultSalaryForLevel } from './src/types';
 
 // Lazy-initialized Gemini AI client
 let aiInstance: GoogleGenAI | null = null;
@@ -99,6 +99,11 @@ async function startServer() {
       }
       const added = await dbStoreInstance.addEmployee({
         ...newEmp,
+        salaryEur:
+          typeof newEmp.salaryEur === 'number' && newEmp.salaryEur > 0
+            ? Number(newEmp.salaryEur)
+            : getDefaultSalaryForLevel(newEmp.currentLevelId || 'L2'),
+        recognitions: Array.isArray(newEmp.recognitions) ? newEmp.recognitions : [],
         skills: newEmp.skills || [],
         certifications: newEmp.certifications || [],
         projectHistory: newEmp.projectHistory || []
@@ -114,6 +119,26 @@ async function startServer() {
       const emp = await dbStoreInstance.addEmployeeSkill(req.params.id, req.body);
       if (!emp) return res.status(404).json({ error: 'Employee not found' });
       res.status(201).json(emp);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.patch('/api/employees/:id/recognitions', async (req, res) => {
+    try {
+      const rawRecognitions = req.body?.recognitions;
+      if (!Array.isArray(rawRecognitions)) {
+        return res.status(400).json({ error: 'El campo recognitions debe ser un array.' });
+      }
+      const hasInvalidTag = rawRecognitions.some(
+        tag => typeof tag !== 'string' || !VALID_RECOGNITION_IDS.has(tag)
+      );
+      if (hasInvalidTag) {
+        return res.status(400).json({ error: 'Uno o más identificadores de marca no son válidos.' });
+      }
+      const emp = await dbStoreInstance.updateEmployeeRecognitions(req.params.id, rawRecognitions);
+      if (!emp) return res.status(404).json({ error: 'Employee not found' });
+      res.json(emp);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }

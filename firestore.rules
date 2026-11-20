@@ -57,7 +57,9 @@ service cloud.firestore {
         && isNonEmptyString(data.name, 200)
         && isNonEmptyString(data.surname, 200)
         && isNonEmptyString(data.currentLevelId, 64)
-        && isNonEmptyString(data.currentCareerPathId, 64);
+        && isNonEmptyString(data.currentCareerPathId, 64)
+        && (!('recognitions' in data) || (data.recognitions is list && data.recognitions.size() <= 20))
+        && (!('salaryEur' in data) || (data.salaryEur is number && data.salaryEur > 0 && data.salaryEur <= 1000000));
     }
 
     function isValidProject(data) {

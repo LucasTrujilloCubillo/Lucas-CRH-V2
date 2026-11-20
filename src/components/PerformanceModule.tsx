@@ -7,7 +7,9 @@ import { MarkdownView } from './MarkdownView';
 import CheckpointProgressChart from './CheckpointProgressChart';
 import TruncatedTooltip from './TruncatedTooltip';
 import DivisionBudgetSection from './DivisionBudgetSection';
+import EmployeeRecognitionIcons from './EmployeeRecognitionIcons';
 import {
+  MIN_SALARY_RAISE_EUR,
   SALARY_RAISE_STEP_EUR,
   computeDivisionSalaryRecommendation,
   formatWholeEur,
@@ -404,10 +406,13 @@ export default function PerformanceModule({
                       >
                         <div className="flex justify-between items-start gap-2 w-full">
                           <div className="min-w-0 flex-1">
-                            <TruncatedTooltip
-                              text={emp ? `${emp.name} ${emp.surname}` : 'Colaborador Genérico'}
-                              className="font-bold text-slate-950 text-xs truncate block"
-                            />
+                            <div className="flex items-center gap-1 min-w-0">
+                              <TruncatedTooltip
+                                text={emp ? `${emp.name} ${emp.surname}` : 'Colaborador Genérico'}
+                                className="font-bold text-slate-950 text-xs truncate block min-w-0"
+                              />
+                              <EmployeeRecognitionIcons employee={emp} size="xs" />
+                            </div>
                             <TruncatedTooltip
                               text={`${careerPaths.find(p => p.id === emp?.currentCareerPathId)?.name || ''} · Div: ${emp?.division || emp?.department || 'N/A'} · Ciclo ${ev.year}`}
                               className="text-[10px] text-slate-500 mt-0.5 truncate block"
@@ -489,6 +494,7 @@ export default function PerformanceModule({
                               text={`${emp.name} ${emp.surname}`}
                               className="font-bold text-slate-900 truncate block min-w-0"
                             />
+                            <EmployeeRecognitionIcons employee={emp} size="xs" />
                           </div>
                           <TruncatedTooltip
                             text={`${emp.division || emp.department} · ${careerPaths.find(p => p.id === emp.currentCareerPathId)?.name || 'Especialista'} | ${careerLevels.find(l => l.id === emp.currentLevelId)?.levelCode || ''}`}
@@ -543,17 +549,23 @@ export default function PerformanceModule({
               {/* Header card info */}
               <div className="border-b-2 border-slate-200 pb-4">
                 <div className="flex justify-between items-start">
-                  <div>
-                    <span className="text-[10px] font-bold text-indigo-600 uppercase tracking-wider block">Expediente de Calibración {selectedEval.year}</span>
-                    <h3 className="text-base font-bold text-slate-900">
-                      {employees.find(e => e.employeeId === selectedEval.employeeId)?.name} {employees.find(e => e.employeeId === selectedEval.employeeId)?.surname}
-                    </h3>
-                    <p className="text-xs text-slate-500">
-                      División: <span className="font-semibold text-slate-700">{(() => { const emp = employees.find(e => e.employeeId === selectedEval.employeeId); return emp?.division || emp?.department || 'Sin asignar'; })()}</span>
-                      <span aria-hidden="true" className="mx-1.5">·</span>
-                      Fase Actual del Proceso: <span className="text-indigo-700 font-semibold">{selectedEval.status}</span>
-                    </p>
-                  </div>
+                  {(() => {
+                    const selectedEmpHeader = employees.find(e => e.employeeId === selectedEval.employeeId);
+                    return (
+                      <div>
+                        <span className="text-[10px] font-bold text-indigo-600 uppercase tracking-wider block">Expediente de Calibración {selectedEval.year}</span>
+                        <h3 className="text-base font-bold text-slate-900 inline-flex items-center gap-1.5">
+                          <span>{selectedEmpHeader?.name} {selectedEmpHeader?.surname}</span>
+                          <EmployeeRecognitionIcons employee={selectedEmpHeader} size="sm" />
+                        </h3>
+                        <p className="text-xs text-slate-500">
+                          División: <span className="font-semibold text-slate-700">{selectedEmpHeader?.division || selectedEmpHeader?.department || 'Sin asignar'}</span>
+                          <span aria-hidden="true" className="mx-1.5">·</span>
+                          Fase Actual del Proceso: <span className="text-indigo-700 font-semibold">{selectedEval.status}</span>
+                        </p>
+                      </div>
+                    );
+                  })()}
                   <button
                     onClick={() => setSelectedEval(null)}
                     className="text-xs text-slate-400 hover:text-slate-600"
@@ -717,13 +729,18 @@ export default function PerformanceModule({
                                         <div className="space-y-1">
                                           {chk.scores.map(sc => {
                                             const compName = competencies.find(c => c.id === sc.competencyId)?.name || sc.competencyId;
+                                            const meetsCompTarget = sc.score >= requiredLevelScore;
                                             return (
                                               <div key={sc.competencyId} className="text-[10px] flex justify-between items-center gap-2 bg-white px-2 py-1 rounded border border-slate-150">
                                                 <TruncatedTooltip
                                                   text={compName}
                                                   className="text-slate-500 truncate max-w-[130px] font-medium block min-w-0"
                                                 />
-                                                <strong className="text-indigo-600 font-bold bg-indigo-50 px-1 py-0.5 rounded shrink-0">{sc.score}/5</strong>
+                                                <strong className={`font-bold font-mono tabular-nums px-1.5 py-0.5 rounded shrink-0 ${
+                                                  meetsCompTarget ? 'text-emerald-700 bg-emerald-50' : 'text-amber-700 bg-amber-50'
+                                                }`}>
+                                                  {sc.score.toFixed(1)} / {requiredLevelScore.toFixed(1)}
+                                                </strong>
                                               </div>
                                             );
                                           })}
@@ -1078,7 +1095,7 @@ export default function PerformanceModule({
                         Recomendación de Subida Salarial — {rec.division}
                       </h4>
                       <p className="text-[11px] text-slate-500 mt-0.5">
-                        Reparto ponderado por nota final y promoción en incrementos de {SALARY_RAISE_STEP_EUR} € (subida garantizada en promociones)
+                        Reparto ponderado por nota final, promoción y Alto Potencial · subida mínima de {MIN_SALARY_RAISE_EUR} € e incrementos de {SALARY_RAISE_STEP_EUR} €
                       </p>
                     </div>
 
@@ -1101,9 +1118,9 @@ export default function PerformanceModule({
                           </div>
                         )}
                       </div>
-                    ) : rec.budgetEur === null || rec.budgetEur < SALARY_RAISE_STEP_EUR ? (
+                    ) : rec.budgetEur === null || rec.budgetEur < MIN_SALARY_RAISE_EUR ? (
                       <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-xs text-slate-600">
-                        Todas las evaluaciones de <strong>{rec.division}</strong> están cerradas, pero no hay un presupuesto configurado (mínimo {SALARY_RAISE_STEP_EUR} €) para calcular la recomendación.
+                        Todas las evaluaciones de <strong>{rec.division}</strong> están cerradas, pero no hay un presupuesto configurado (mínimo {MIN_SALARY_RAISE_EUR} €) para calcular la recomendación.
                       </div>
                     ) : selectedItem ? (
                       <div className="bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3 flex flex-wrap items-center justify-between gap-3">
@@ -1114,13 +1131,27 @@ export default function PerformanceModule({
                           <p className="text-xs text-emerald-900 mt-0.5">
                             {selectedItem.rationale} · Nota <span className="font-mono font-bold">{selectedItem.finalScore.toFixed(2)}/5</span>
                             {selectedItem.isPromoted ? ' · Con promoción' : ''}
+                            {selectedItem.isHighPotential ? ' · Alto Potencial' : ''}
                           </p>
                         </div>
                         <div className="text-right font-mono tabular-nums">
-                          <span className="text-lg font-extrabold text-emerald-700 block leading-tight">
-                            {formatWholeEur(selectedItem.recommendedRaiseEur)}
-                          </span>
-                          <span className="text-[10px] text-emerald-700/80 font-semibold">
+                          <div className="flex items-baseline justify-end gap-2">
+                            <span className="text-lg font-extrabold text-emerald-700 leading-tight">
+                              {formatWholeEur(selectedItem.recommendedRaiseEur)}
+                            </span>
+                            <span
+                              className={`text-xs font-bold px-1.5 py-0.5 rounded border ${
+                                selectedItem.recommendedRaiseEur > 0
+                                  ? 'text-emerald-700 bg-emerald-100/90 border-emerald-200'
+                                  : 'text-slate-500 bg-slate-100 border-slate-200'
+                              }`}
+                            >
+                              {selectedItem.recommendedRaiseEur > 0
+                                ? `+${selectedItem.salaryRaisePercent.toFixed(1)}%`
+                                : '0.0%'}
+                            </span>
+                          </div>
+                          <span className="text-[10px] text-emerald-700/80 font-semibold block mt-0.5">
                             {selectedItem.sharePercent.toFixed(1)}% del reparto · {formatEvalResultLabel(selectedItem.evaluationResult)}
                           </span>
                         </div>

@@ -93,12 +93,14 @@
         "hireDate": { "type": "string" },
         "status": { "type": "string" },
         "availabilityPercent": { "type": "number" },
+        "recognitions": { "type": "array" },
         "skills": { "type": "array" },
         "certifications": { "type": "array" },
         "projectHistory": { "type": "array" },
         "bio": { "type": "string" },
         "education": { "type": "array" },
-        "languages": { "type": "array" }
+        "languages": { "type": "array" },
+        "salaryEur": { "type": "number" }
       },
       "required": ["employeeId", "name", "surname", "currentLevelId", "currentCareerPathId"]
     },

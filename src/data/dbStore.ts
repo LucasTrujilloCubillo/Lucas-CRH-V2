@@ -11,7 +11,9 @@ import {
   CheckpointReview,
   AnnualEvaluation,
   DevelopmentPlan,
-  DivisionBudget
+  DivisionBudget,
+  VALID_RECOGNITION_IDS,
+  getDefaultSalaryForLevel
 } from '../types';
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getFirestore, collection, getDocs, doc, getDoc, getDocFromServer, setDoc, updateDoc, deleteDoc, query, limit } from 'firebase/firestore';
@@ -535,6 +537,7 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     hireDate: '2022-03-15',
     status: 'Active',
     availabilityPercent: 100, // Fully available on bench!
+    salaryEur: 39000,
     skills: [
       { skillId: 's1', name: 'React', category: 'Frontend', level: 5, validatedDate: '2025-01-10', source: 'Project' },
       { skillId: 's2', name: 'Node.js', category: 'Backend', level: 4, validatedDate: '2025-02-15', source: 'Project' },
@@ -565,6 +568,7 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     hireDate: '2020-09-01',
     status: 'Active',
     availabilityPercent: 20, // Low availability, freeing up soon
+    salaryEur: 51000,
     skills: [
       { skillId: 's6', name: 'Enterprise Architect', category: 'Architecture', level: 5, validatedDate: '2024-10-15', source: 'Project' },
       { skillId: 's7', name: 'Kubernetes', category: 'DevOps', level: 5, validatedDate: '2025-01-20', source: 'Project' },
@@ -597,6 +601,7 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     hireDate: '2024-06-01',
     status: 'Active',
     availabilityPercent: 100, // Fully available
+    salaryEur: 22000,
     skills: [
       { skillId: 's1', name: 'React', category: 'Frontend', level: 3, validatedDate: '2025-04-01', source: 'Self' },
       { skillId: 's11', name: 'JavaScript', category: 'Languages', level: 4, validatedDate: '2024-07-15', source: 'Self' },
@@ -621,6 +626,7 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     hireDate: '2021-01-15',
     status: 'Active',
     availabilityPercent: 0, // Fully allocated
+    salaryEur: 49000,
     skills: [
       { skillId: 's13', name: 'Agile Management', category: 'Agile', level: 5, validatedDate: '2024-09-10', source: 'Project' },
       { skillId: 's14', name: 'Scrum Master', category: 'Agile', level: 5, validatedDate: '2024-08-11', source: 'Project' },
@@ -650,6 +656,7 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     hireDate: '2023-11-01',
     status: 'Active',
     availabilityPercent: 50, // Partly busy
+    salaryEur: 28500,
     skills: [
       { skillId: 's16', name: 'Vue', category: 'Frontend', level: 4, validatedDate: '2024-08-10', source: 'Project' },
       { skillId: 's2', name: 'Node.js', category: 'Backend', level: 3, validatedDate: '2024-11-15', source: 'Self' },
@@ -676,6 +683,7 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     hireDate: '2018-05-10',
     status: 'Active',
     availabilityPercent: 10,
+    salaryEur: 65000,
     skills: [
       { skillId: 's6', name: 'Enterprise Architect', category: 'Architecture', level: 5, validatedDate: '2023-10-10', source: 'Project' },
       { skillId: 's18', name: 'Solution Blueprint', category: 'Architecture', level: 5, validatedDate: '2024-01-11', source: 'Project' },
@@ -704,6 +712,7 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     hireDate: '2023-02-01',
     status: 'Active',
     availabilityPercent: 50,
+    salaryEur: 37500,
     bio: 'Ingeniero Full-Stack con más de 5 años de experiencia en diseño y desarrollo de aplicaciones web escalables con React, TypeScript, Node.js y arquitectura cloud en AWS. Especializado en modernización de plataformas e-commerce, diseño modular e integración continua. Durante 2026 ha evolucionado de Etapa A hacia la consolidación plena de Nivel 2 (Etapa B/C).',
     education: [
       'Grado en Ingeniería Informática — Universidad Politécnica de Madrid (2017–2021)',
@@ -746,6 +755,8 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     hireDate: '2020-04-10',
     status: 'Active',
     availabilityPercent: 25,
+    salaryEur: 52000,
+    recognitions: ['high_potential'],
     bio: 'Arquitecta de Plataformas de Datos e IA Generativa con experiencia liderando equipos multi-squad en banca y telecomunicaciones.',
     education: [
       'Máster en Ciencia de Datos e Inteligencia Artificial — Universidad Carlos III (2018)'
@@ -779,6 +790,7 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     hireDate: '2022-09-01',
     status: 'Active',
     availabilityPercent: 40,
+    salaryEur: 40000,
     bio: 'Ingeniero Senior de MLOps y pipelines de datos en tiempo real especializado en Spark, Kubernetes y observabilidad de modelos.',
     skills: [
       { skillId: 's28', name: 'Python', category: 'Data & AI', level: 5, validatedDate: '2026-09-12', source: 'Project' },
@@ -808,6 +820,7 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     hireDate: '2024-02-15',
     status: 'Active',
     availabilityPercent: 50,
+    salaryEur: 30000,
     bio: 'Data Engineer enfocada en ETL cloud, calidad del dato y APIs analíticas con Python y PostgreSQL.',
     skills: [
       { skillId: 's31', name: 'Python', category: 'Data & AI', level: 4, validatedDate: '2026-08-10', source: 'Project' },
@@ -835,6 +848,7 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     hireDate: '2025-05-01',
     status: 'Active',
     availabilityPercent: 100,
+    salaryEur: 23000,
     bio: 'Analista funcional junior de BI y visualización orientado a definición de KPIs de negocio y gobierno del dato.',
     skills: [
       { skillId: 's34', name: 'Power BI', category: 'Data & AI', level: 4, validatedDate: '2026-07-20', source: 'Project' },
@@ -861,6 +875,7 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     hireDate: '2017-10-01',
     status: 'Active',
     availabilityPercent: 20,
+    salaryEur: 62000,
     bio: 'Senior Manager de programas de Analítica Avanzada encargada de coordinación de cuentas y seguimiento de entregas multi-país.',
     skills: [
       { skillId: 's36', name: 'Program Management', category: 'Management', level: 4, validatedDate: '2026-05-20', source: 'Project' },
@@ -1728,6 +1743,7 @@ export class DatabaseStore {
         }
         await setDoc(doc(db, 'systemMeta', 'divisionBudgetsSeeded'), { seeded: true, seededAt: new Date().toISOString() });
         await setDoc(doc(db, 'systemMeta', 'dataAiDivisionSeeded'), { seeded: true, seededAt: new Date().toISOString() });
+        await setDoc(doc(db, 'systemMeta', 'highPotentialSampleSeeded'), { seeded: true, seededAt: new Date().toISOString() });
         console.log('[Firestore] Data seeding completed.');
       } else {
         console.log('[Firestore] Database is already seeded. Checking idempotent additions...');
@@ -1738,14 +1754,21 @@ export class DatabaseStore {
         }
         await this.ensureRecordExists('annualEvaluations', 'EV003', INITIAL_ANNUAL_EVALUATIONS.find(ev => ev.evaluationId === 'EV003'));
 
-        // Ensure every seeded employee has their assigned division in Firestore
-        for (const emp of INITIAL_EMPLOYEES) {
-          if (emp.division) {
-            const empRef = doc(db, 'employees', emp.employeeId);
-            const empSnap = await getDoc(empRef);
-            if (empSnap.exists() && !empSnap.data()?.division) {
-              await updateDoc(empRef, { division: emp.division });
-            }
+        // Ensure every seeded employee has their assigned division and base salary in Firestore
+        const seededById = new Map(INITIAL_EMPLOYEES.map(e => [e.employeeId, e]));
+        const allEmpSnap = await getDocs(collection(db, 'employees'));
+        for (const empDoc of allEmpSnap.docs) {
+          const data = empDoc.data();
+          const seedEmp = seededById.get(empDoc.id);
+          const patch: Record<string, unknown> = {};
+          if (seedEmp?.division && !data?.division) {
+            patch.division = seedEmp.division;
+          }
+          if (!(typeof data?.salaryEur === 'number' && data.salaryEur > 0)) {
+            patch.salaryEur = seedEmp?.salaryEur ?? getDefaultSalaryForLevel(data?.currentLevelId || 'L2');
+          }
+          if (Object.keys(patch).length > 0) {
+            await updateDoc(doc(db, 'employees', empDoc.id), patch);
           }
         }
 
@@ -1784,6 +1807,18 @@ export class DatabaseStore {
             INITIAL_DIVISION_BUDGETS.find(b => b.id === 'DIV_data_ai')
           );
           await setDoc(dataAiMetaRef, { seeded: true, seededAt: new Date().toISOString() });
+        }
+
+        // Idempotent initial sample of High Potential mark on E008 once
+        const hpMetaRef = doc(db, 'systemMeta', 'highPotentialSampleSeeded');
+        const hpMetaSnap = await getDoc(hpMetaRef);
+        if (!hpMetaSnap.exists()) {
+          const e008Ref = doc(db, 'employees', 'E008');
+          const e008Snap = await getDoc(e008Ref);
+          if (e008Snap.exists() && !Array.isArray(e008Snap.data()?.recognitions)) {
+            await updateDoc(e008Ref, { recognitions: ['high_potential'] });
+          }
+          await setDoc(hpMetaRef, { seeded: true, seededAt: new Date().toISOString() });
         }
       }
     } catch (err) {
@@ -1943,15 +1978,22 @@ export class DatabaseStore {
   }
 
   async addEmployee(emp: Employee): Promise<Employee> {
+    const normalizedEmp: Employee = {
+      ...emp,
+      salaryEur:
+        typeof emp.salaryEur === 'number' && emp.salaryEur > 0
+          ? Number(emp.salaryEur)
+          : getDefaultSalaryForLevel(emp.currentLevelId)
+    };
     if (!db) {
-      this.memEmployees.push(emp);
-      return emp;
+      this.memEmployees.push(normalizedEmp);
+      return normalizedEmp;
     }
     try {
-      await setDoc(doc(db, 'employees', emp.employeeId), emp);
-      return emp;
+      await setDoc(doc(db, 'employees', normalizedEmp.employeeId), normalizedEmp);
+      return normalizedEmp;
     } catch (err) {
-      handleFirestoreError(err, OperationType.CREATE, `employees/${emp.employeeId}`);
+      handleFirestoreError(err, OperationType.CREATE, `employees/${normalizedEmp.employeeId}`);
     }
   }
 
@@ -1970,6 +2012,20 @@ export class DatabaseStore {
     
     const updatedSkills = [...(emp.skills || []), newSkill];
     return this.updateEmployee(id, { skills: updatedSkills });
+  }
+
+  async updateEmployeeRecognitions(id: string, recognitions: string[]): Promise<Employee | null> {
+    const emp = await this.getEmployee(id);
+    if (!emp) return null;
+
+    const cleanRecognitions = Array.from(
+      new Set(
+        recognitions
+          .filter((tag): tag is string => typeof tag === 'string' && VALID_RECOGNITION_IDS.has(tag))
+      )
+    ).slice(0, 20);
+
+    return this.updateEmployee(id, { recognitions: cleanRecognitions });
   }
 
   async getProject(id: string): Promise<Project | null> {

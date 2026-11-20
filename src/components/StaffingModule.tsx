@@ -5,6 +5,7 @@ import {
 import { Project, ProjectRoleRequest, Employee, UserRole } from '../types';
 import { MarkdownView } from './MarkdownView';
 import EmployeeCVPanel from './EmployeeCVPanel';
+import EmployeeRecognitionIcons from './EmployeeRecognitionIcons';
 
 interface StaffingModuleProps {
   userRole: UserRole;
@@ -798,7 +799,10 @@ export default function StaffingModule({
                         <span className="text-[10px] font-mono bg-slate-100 text-slate-600 px-1 py-0.5 rounded font-bold">
                           {emp.employeeId}
                         </span>
-                        <h4 className="text-xs font-bold text-slate-900 mt-1">{emp.name} {emp.surname}</h4>
+                        <h4 className="text-xs font-bold text-slate-900 mt-1 inline-flex items-center gap-1.5">
+                          <span>{emp.name} {emp.surname}</span>
+                          <EmployeeRecognitionIcons employee={emp} size="xs" />
+                        </h4>
                         <p className="text-[11px] text-slate-500">{pathName} | <span className="font-semibold">{levelName}</span></p>
                         <p className="text-[11px] text-slate-400 mt-0.5">{emp.email}</p>
                       </div>
@@ -892,8 +896,9 @@ export default function StaffingModule({
                             <div key={c.employeeId} className="border border-slate-200 rounded-lg p-3 hover:shadow-sm transition bg-slate-50/50">
                               <div className="flex justify-between items-start gap-3">
                                 <div className="space-y-0.5">
-                                  <h5 className="text-xs font-bold text-slate-900">
-                                    {c.employee.name} {c.employee.surname}
+                                  <h5 className="text-xs font-bold text-slate-900 inline-flex items-center gap-1.5">
+                                    <span>{c.employee.name} {c.employee.surname}</span>
+                                    <EmployeeRecognitionIcons employee={c.employee} size="xs" />
                                   </h5>
                                   <p className="text-[11px] text-slate-500">
                                     Nivel: <strong className="text-slate-700">{careerLevels.find(l => l.id === c.employee.currentLevelId)?.name}</strong> | Depto: {c.employee.department}
@@ -990,28 +995,32 @@ export default function StaffingModule({
       </div>
 
       {/* Modal Ficha CV del Colaborador */}
-      {cvEmployee && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-label={`Ficha CV de ${cvEmployee.name} ${cvEmployee.surname}`}
-          className="fixed inset-0 z-50 bg-slate-900/50 flex items-center justify-center p-4"
-          onClick={() => setCvEmployee(null)}
-        >
+      {cvEmployee && (() => {
+        const activeCvEmployee =
+          employees.find(e => e.employeeId === cvEmployee.employeeId) || cvEmployee;
+        return (
           <div
-            className="w-full max-w-3xl max-h-[85vh] overflow-y-auto rounded-xl shadow-xl"
-            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-label={`Ficha CV de ${activeCvEmployee.name} ${activeCvEmployee.surname}`}
+            className="fixed inset-0 z-50 bg-slate-900/50 flex items-center justify-center p-4"
+            onClick={() => setCvEmployee(null)}
           >
-            <EmployeeCVPanel
-              employee={cvEmployee}
-              careerPaths={careerPaths}
-              careerLevels={careerLevels}
-              projects={projects}
-              onClose={() => setCvEmployee(null)}
-            />
+            <div
+              className="w-full max-w-3xl max-h-[85vh] overflow-y-auto rounded-xl shadow-xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <EmployeeCVPanel
+                employee={activeCvEmployee}
+                careerPaths={careerPaths}
+                careerLevels={careerLevels}
+                projects={projects}
+                onClose={() => setCvEmployee(null)}
+              />
+            </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
     </div>
   );
 }
