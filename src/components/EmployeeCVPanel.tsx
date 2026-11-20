@@ -350,7 +350,7 @@ export default function EmployeeCVPanel({
                 <div>
                   <h4 id="recognition-confirm-title" className="text-sm font-bold text-slate-900">
                     {pendingConfirmation.nextActive
-                      ? `Confirmar activación: ${pendingConfirmation.def.label}`
+                      ? `Confirmar AAAAAA: ${pendingConfirmation.def.label}`
                       : `Confirmar desactivación: ${pendingConfirmation.def.label}`}
                   </h4>
                   <p className="text-xs text-slate-500 mt-0.5">
